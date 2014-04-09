@@ -1,0 +1,71 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+Vagrant.configure("2") do |config|
+
+  location = ENV['LOCATION']
+  hostaddresses = ENV['HOSTIPADDRESSES']
+  [location = "M3OFFICE" ] if (location.nil?)
+  [hostaddresses = "127.0.1.1" ] if (hostaddresses.nil?)
+
+  databagfile = "databags/#{location}.json"
+  keyfile = "databags/key.json"
+  config.vm.box = "precise64"
+  config.vm.box_url = "http://cloudcto.wipro.com/vagrantboxes/precise64.box"
+#  config.vm.box_url = "http://localhost/home/wipro/MyVMSTemplate_try2/centos64-x86_64-20131030.box"
+  config.vm.network :forwarded_port, guest: 3001, host: 3002, auto_correct: true
+  config.vm.network :forwarded_port, guest: 22, host: 2226, auto_correct: true
+  #config.vm.network :public_network, #:use_dhcp_assigned_default_route => true
+  config.vm.hostname = "testchefserver.wipro.com"
+  config.vm.provider "virtualbox" do |v|
+     v.name = "vm"+rand(1-5000).to_s
+     v.customize ["modifyvm", :id, "--memory", 4000]
+  end
+  config.vm.provision :chef_solo do |chef|
+     chef.arguments = '-l debug'
+     chef.log_level = "debug"
+     chef.cookbooks_path = "cookbooks"
+     chef.data_bags_path = "databags"
+     chef.json.merge!(JSON.parse(File.read(databagfile)))
+     chef.json.merge!(JSON.parse(File.read(keyfile)))
+     chef.json.merge!({ "hostipaddresses" => hostaddresses })
+     chef.json.merge!({ "vmname" => config.vm.box })
+     print "Environment Passed to Chef is ",chef.json, "\n"
+#     chef.add_recipe("chef_handler::client_run_result")
+#      chef.add_recipe("http_proxy")
+#     chef.add_recipe("cookbook-curl")
+	chef.add_recipe("apt::default")
+     chef.add_recipe("java::default")
+#     chef.add_recipe("test_ckbk")
+#     chef.add_recipe("git::source")
+#     chef.add_recipe("ant")
+#     chef.add_recipe("maven")
+#     chef.add_recipe("jenkins::server")
+#     chef.add_recipe("post_call")
+#      chef.add_recipe("remote_exec")
+#      chef.add_recipe("chef-client::default")
+#      chef.add_recipe("chef-client::config")
+#      chef.add_recipe("chef-client::copy_validation_test")
+#      chef.add_recipe("return_ip")
+#      chef.add_recipe("openssl")
+#      chef.add_recipe("build-essential::default")
+#      chef.add_recipe("tomcat::default")
+#      chef.add_recipe("postgresql::server")
+#       chef.add_recipe("chef-tomcat-bin")
+#       chef.add_recipe("phantom_call")
+#      chef.add_recipe("postgresql::ruby")
+#      chef.add_recipe("database::postgresql")
+#      chef.add_recipe("nexus_war")
+#      chef.add_recipe("copy_maven_settings")
+#      chef.add_recipe("groovy-cookbook")
+#      chef.add_recipe("chef-server::default")
+     chef.add_recipe("config_service_ocd")
+#      chef.add_recipe("apt::default")
+#      chef.add_recipe("zeromq-cookbook")
+  end
+config.vm.provision "docker" do |d| 
+end 
+config.vm.provision "shell" do |s|
+    s.privileged = false
+   s.path = "start.sh"
+  end
+end
