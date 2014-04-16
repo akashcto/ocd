@@ -16,10 +16,10 @@ cookbook_file "chef-repo.tar.gz" do
   action :create
 end
 
-cookbook_file "dockerprov-1.0-SNAPSHOT-jar-with-dependencies.jar" do
-  path "/home/vagrant/dockerprov-1.0-SNAPSHOT-jar-with-dependencies.jar"
-  action :create
-end
+#cookbook_file "dockerprov-1.0-SNAPSHOT-jar-with-dependencies.jar" do
+#  path "/home/vagrant/dockerprov-1.0-SNAPSHOT-jar-with-dependencies.jar"
+#  action :create
+#end
 
 #cookbook_file ".chef.tar.gz" do
 #  path "/home/vagrant/.chef.tar.gz"
@@ -36,15 +36,15 @@ end
 #  action :create
 #end
 
-cookbook_file "queue.rb" do
-  path "/home/vagrant/queue.rb"
-  action :create
-end
+#cookbook_file "queue.rb" do
+#  path "/home/vagrant/queue.rb"
+#  action :create
+#end
 
-cookbook_file "add_to_runlist.rb" do
-  path "/home/vagrant/add_to_runlist.rb"
-  action :create
-end
+#cookbook_file "add_to_runlist.rb" do
+#  path "/home/vagrant/add_to_runlist.rb"
+#  action :create
+#end
 
 #cookbook_file "sinatra_server.rb" do
 #  path "/home/vagrant/"
