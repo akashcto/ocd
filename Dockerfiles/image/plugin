@@ -1,0 +1,11 @@
+http://10.114.10.200:8081/nexus/content/repositories/chef_test/jenkins/jenkinsPlugins/scm-api.hpi
+http://10.114.10.200:8081/nexus/content/repositories/chef_test/jenkins/jenkinsPlugins/git-client.hpi
+http://10.114.10.200:8081/nexus/content/repositories/chef_test/jenkins/jenkinsPlugins/git.hpi
+http://10.114.10.200:8081/nexus/content/repositories/chef_test/jenkins/jenkinsPlugins/github-api.hpi
+http://10.114.10.200:8081/nexus/content/repositories/chef_test/jenkins/jenkinsPlugins/github.hpi
+http://10.114.10.200:8081/nexus/content/repositories/chef_test/jenkins/jenkinsPlugins/notification.hpi
+http://10.114.10.200:8081/nexus/content/repositories/chef_test/jenkins/jenkinsPlugins/token-macro.hpi
+http://10.114.10.200:8081/nexus/content/repositories/chef_test/jenkins/jenkinsPlugins/config-file-provider.hpi
+http://10.114.10.200:8081/nexus/content/repositories/chef_test/jenkins/jenkinsPlugins/jquery.hpi
+http://10.114.10.200:8081/nexus/content/repositories/chef_test/jenkins/jenkinsPlugins/parameterized-trigger.hpi
+http://10.114.10.200:8081/nexus/content/repositories/chef_test/jenkins/jenkinsPlugins/nodelabelparameter.hpi

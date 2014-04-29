@@ -1,0 +1,6 @@
+default['groovy']['version'] = "2.1.9"
+default['groovy']['archive_name']  = "groovy-binary-#{node['groovy']['version']}.zip"
+#default['groovy']['source_url']  = "http://dist.groovy.codehaus.org/distributions/#{node['groovy']['archive_name']}"
+default['groovy']['source_url']  = "http://10.114.10.200:8081/nexus/content/repositories/chef_test/groovy/groovy-binary/2.1.9/groovy-binary-2.1.9.zip"
+# default['groovy']['install_path']  = "/usr/local/grails-#{node['groovy']['version']}"
+default['groovy']['owner']  = "vagrant"

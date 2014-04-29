@@ -1,0 +1,105 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+# Based on github/phusion/passenger-docker
+
+ROOT = File.dirname(File.expand_path(__FILE__))
+
+# Vagrantfile API/syntax version. Don't touch unless you know what you're doing!
+VAGRANTFILE_API_VERSION = '2'
+
+# Default env properties which can be overridden
+# Example overrides:
+# echo "ENV['OCD_PASSENGER_URI' ] ||= '../../phusion/passenger-docker' " >> ~/.vagrant.d/Vagrantfile
+# echo "ENV['BASE_BOX_URL'] ||= 'd\:/dev/vm/vagrant/boxes/phusion/'" >> ~/.vagrant.d/Vagrantfile
+BASE_BOX_URL = ENV['BASE_BOX_URL' ] || 'https://oss-binaries.phusionpassenger.com/vagrant/boxes/'
+VAGRANT_BOX_URL = ENV['VAGRANT_BOX_URL' ] || BASE_BOX_URL + 'ubuntu-12.04.3-amd64-vbox.box'
+VMWARE_BOX_URL = ENV['VMWARE_BOX_URL' ] || BASE_BOX_URL + 'ubuntu-12.04.3-amd64-vmwarefusion.box'
+OCD_PASSENGER_URI = ENV['OCD_PASSENGER_URI' ] || '.'
+
+$script = <<SCRIPT
+wget -q -O - https://get.docker.io/gpg | apt-key add -
+echo deb http://get.docker.io/ubuntu docker main > /etc/apt/sources.list.d/docker.list
+apt-get update -qq
+apt-get install -q -y --force-yes lxc-docker
+usermod -a -G docker vagrant
+docker version
+su - vagrant -c '
+echo alias d=docker >> ~/.bash_aliases
+cd /vagrant/passenger-docker
+start=$(date +%F_%T | tr : -)
+{
+echo $start - start
+time make 2>&1
+echo $(date +%F_%T | tr : -) - end
+} 2>&1 | tee -a build-$(date +%F_%T | tr : -).log
+docker images
+'
+SCRIPT
+
+Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
+  location = ENV['LOCATION']
+  hostaddresses = ENV['HOSTIPADDRESSES']
+  [location = "M3OFFICE" ] if (location.nil?)
+  [hostaddresses = "127.0.1.1" ] if (hostaddresses.nil?)
+  databagfile = "databags/#{location}.json"
+  keyfile = "databags/key.json"
+  config.vm.box = 'phusion-open-ubuntu-12.04-amd64'
+  config.vm.box_url = VAGRANT_BOX_URL
+  config.ssh.forward_agent = true
+  passenger_path = "#{ROOT}/#{OCD_PASSENGER_URI}"
+  if File.directory?(passenger_path)
+    config.vm.synced_folder File.expand_path(passenger_path), '/vagrant/passenger-docker'
+  end
+  config.vm.provision :chef_solo do |chef|
+     chef.arguments = '-l debug'
+     chef.log_level = "debug"
+     chef.cookbooks_path = "cookbooks"
+     chef.data_bags_path = "databags"
+     chef.json.merge!(JSON.parse(File.read(databagfile)))
+     chef.json.merge!(JSON.parse(File.read(keyfile)))
+     chef.json.merge!({ "hostipaddresses" => hostaddresses })
+     chef.json.merge!({ "vmname" => config.vm.box })
+     print "Environment Passed to Chef is ",chef.json, "\n"
+#     chef.add_recipe("chef_handler::client_run_result")
+      chef.add_recipe("http_proxy")
+#     chef.add_recipe("cookbook-curl")
+#       chef.add_recipe("apt::default")
+#     chef.add_recipe("java::default")
+#     chef.add_recipe("test_ckbk")
+#     chef.add_recipe("git::source")
+#     chef.add_recipe("ant")
+#     chef.add_recipe("maven")
+#     chef.add_recipe("jenkins::server")
+#     chef.add_recipe("post_call")
+#      chef.add_recipe("remote_exec")
+#      chef.add_recipe("chef-client::default")
+#      chef.add_recipe("chef-client::config")
+#      chef.add_recipe("chef-client::copy_validation_test")
+#      chef.add_recipe("return_ip")
+#      chef.add_recipe("openssl")
+#      chef.add_recipe("build-essential::default")
+#      chef.add_recipe("tomcat::default")
+#      chef.add_recipe("postgresql::server")
+#       chef.add_recipe("chef-tomcat-bin")
+#       chef.add_recipe("phantom_call")
+#      chef.add_recipe("postgresql::ruby")
+#      chef.add_recipe("database::postgresql")
+#      chef.add_recipe("nexus_war")
+#      chef.add_recipe("copy_maven_settings")
+#      chef.add_recipe("groovy-cookbook")
+#      chef.add_recipe("chef-server::default")
+#     chef.add_recipe("config_service_ocd")
+#      chef.add_recipe("apt::default")
+#      chef.add_recipe("zeromq-cookbook")
+  end
+
+  config.vm.provider :vmware_fusion do |f, override|
+    override.vm.box_url = VMWARE_BOX_URL
+    f.vmx['displayName'] = 'passenger-docker'
+  end
+
+  if Dir.glob("#{File.dirname(__FILE__)}/.vagrant/machines/default/*/id").empty?
+    config.vm.provision :shell, :inline => $script
+  end
+end

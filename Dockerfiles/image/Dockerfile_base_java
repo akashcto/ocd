@@ -1,0 +1,9 @@
+FROM wipro/ocd-java:0.1.0
+MAINTAINER CTO OCD <cto-ocd@wipro.com>
+
+ENV HOME /root
+ADD . /build
+RUN /build/initialconfig.sh
+RUN /build/initialrequire.sh
+RUN /build/install.sh
+
