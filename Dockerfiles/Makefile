@@ -2,10 +2,10 @@ NAME = wipro/ocd
 VERSION = 0.1.0
 
 .PHONY: all \
-	base java zmq chefclient javaservice jenkins nexus meteor orchestrator 
+	base java zmq chefclient javaservice jenkins nexus meteor orchestrator chefserver 
 	tag_latest release clean
 
-all:   base java zmq chefclient javaservice jenkins nexus meteor orchestrator
+all:   base java zmq chefclient javaservice jenkins nexus meteor orchestrator chefserver	
 
 # TODO: ran the proxy docker and expose 8000 - but can't connect to t, confirm all others can talk to it, check and publish the performance boost before/after.
 # Check if "http://docs.docker.io/en/latest/use/port_redirection/#linking-a-container" is needed at all.  (if ... run ... -p 8000:8000 already
@@ -177,3 +177,10 @@ clean:
 	rm -rf meteor_image
 	rm -rf orchestrator_image
 
+chefserver:
+	echo "Start time of $@: " `date`
+	rm -rf chefserver_image
+	cp -pR image chefserver_image
+	cp chefserver_image/Dockerfile_for_server chefserver_image/Dockerfile
+	docker build -t $(NAME)-chefserver:$(VERSION) -rm chefserver_image
+	echo "End time of $@: " `date`

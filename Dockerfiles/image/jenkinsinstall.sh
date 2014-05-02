@@ -28,6 +28,10 @@ echo "export JENKINS_HOME=/.jenkins" >> .bashrc
 . .bashrc
 cd ../
 touch start.sh
+echo "export M2_HOME=/apache-maven/" >> start.sh
+echo "export ANT_HOME=/apache-ant/" >> start.sh
+echo 'export PATH=$PATH:/apache-ant/bin/:/apache-maven/bin/' >> start.sh
+echo "export JENKINS_HOME=/.jenkins" >> start.sh
 echo "cd /broadleaf" >> start.sh
 echo "mvn clean install" >> start.sh
 echo "cd /broadleaf/site" >> start.sh

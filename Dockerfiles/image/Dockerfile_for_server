@@ -1,0 +1,91 @@
+FROM wipro/ocd-base:0.1.0
+ 
+#RUN #echo 'deb http://archive.ubuntu.com/ubuntu precise main universe' > /etc/apt/sources.list && \
+    #echo 'deb http://archive.ubuntu.com/ubuntu precise-updates universe' >> /etc/apt/sources.list && \
+RUN  apt-get update
+
+ENV HOST localhost
+#SSHD
+RUN DEBIAN_FRONTEND=noninteractive apt-get install -y openssh-server &&	mkdir /var/run/sshd && \
+    echo 'root:root' |chpasswd
+
+#Utilities
+RUN DEBIAN_FRONTEND=noninteractive apt-get install -y less net-tools inetutils-ping curl git telnet nmap socat dnsutils netcat tree htop unzip sudo
+
+#Chef Server
+RUN wget https://opscode-omnibus-packages.s3.amazonaws.com/ubuntu/12.04/x86_64/chef-server_11.0.11-1.ubuntu.12.04_amd64.deb&& \
+    dpkg -i chef*.deb && \
+    rm chef*.deb
+
+#Docker client only
+RUN wget -O /usr/local/bin/docker https://get.docker.io/builds/Linux/x86_64/docker-latest && \
+    chmod +x /usr/local/bin/docker
+
+RUN mkdir /docker
+ADD ./chefserver /docker
+ADD ./chefserver/sv/ssh /opt/chef-server/service/
+RUN touch /start.sh
+RUN cp /docker/start.sh /start.sh
+
+RUN mkdir -p /etc/chef-server && ln -s /docker/chef-server.rb /etc/chef-server/
+
+#Configuration
+#Reconfigure
+RUN sysctl -w kernel.shmall=4194304 && \
+    sysctl -w kernel.shmmax=100000000000 && \
+    /opt/chef-server/embedded/bin/runsvdir-start & \
+    chef-server-ctl reconfigure #&& \
+#    chef-server-ctl stop
+#Fix Nginx redirect problem when behind NAT
+#RUN sed -i -e 's|proxy_set_header Host .*|proxy_set_header Host $http_host;|' /var/opt/chef-server/nginx/etc/chef_http_lb.conf
+
+WORKDIR /
+#download the required tar files
+RUN wget --no-check-certificate https://s3-ap-northeast-1.amazonaws.com/ocd-framework/chef_11.8.0-1.ubuntu.12.04_amd64.deb -O chef_11.8.0-1.ubuntu.12.04_amd64.deb && \
+    wget --no-check-certificate https://s3-ap-northeast-1.amazonaws.com/ocd-framework/chef-repo.tar.gz -O chef-repo.tar.gz && \
+    wget --no-check-certificate https://s3-ap-northeast-1.amazonaws.com/ocd-framework/gems.tar.gz -O gems.tar.gz && \
+    wget --no-check-certificate https://s3-ap-northeast-1.amazonaws.com/ocd-framework/zeromq-2.2.0.tar.gz -O zeromq-2.2.0.tar.gz && \
+    wget --no-check-certificate https://s3-ap-northeast-1.amazonaws.com/ocd-framework/ocd.tar.gz -O ocd.tar.gz
+
+RUN apt-get install libtool autoconf automake uuid-dev make build-essential ruby ruby1.9.1-dev -y
+
+#install zeromq
+RUN tar xzf zeromq-2.2.0.tar.gz && \
+    cd /zeromq-2.2.0 && \
+    ./configure && \
+    make && \
+    make install && \
+    ldconfig
+    cd /
+
+RUN dpkg -i chef_11.8.0-1.ubuntu.12.04_amd64.deb
+
+#install required gems
+RUN tar xzf gems.tar.gz && \
+    cd gems && \
+    gem install bundler-1.5.3.gem --no-ri --no-Rdoc && \
+    gem install ffi-1.9.3.gem --no-ri --no-Rdoc && \
+    gem install ffi-rzmq-1.0.3.gem --no-ri --no-Rdoc && \
+    gem install rack-1.5.2.gem --no-ri --no-Rdoc  && \
+    gem install rack-protection-1.5.1.gem --no-ri --no-Rdoc && \
+    gem install tilt-1.4.1.gem --no-ri --no-Rdoc && \
+    gem install sinatra-1.4.4.gem --no-ri --no-Rdoc && \
+    gem install zmq-2.1.4.gem --no-ri --no-Rdoc  && \
+    gem install chef-11.8.0.gem --no-ri --no-Rdoc && \
+    cd /
+
+RUN tar xzf chef-repo.tar.gz
+
+RUN tar xzf ocd.tar.gz
+#RUN echo abccd1234 | sudo knife configure -i -r /chef-repo --validation-client-name chef-validator --validation-key /etc/chef-server/chef-validator.pem --admin-client-name admin --admin-client-key /etc/chef-server/admin.pem --user ubuntu --defaults -y
+
+#Knife
+#RUN mkdir -p /root/.chef && \
+#    ln -s /docker/knife.rb /root/.chef/
+#RUN ln -s /docker/chef-repo /root/
+
+RUN echo 'export PATH=/opt/chef-server/embedded/bin:$PATH' >> /root/.bashrc
+CMD /docker/init
+EXPOSE 22
+
+

@@ -33,6 +33,17 @@ echo "curl -o orchestrator.tar.gz $URL_Orchestrator" >> start.sh
 echo "tar zxvf orchestrator.tar.gz" >> start.sh
 echo "rm -rf orchestrator.tar.gz" >> start.sh
 echo "cd orchestrator" >> start.sh
-echo "sh orch_startup.sh" >> start.sh
+echo "python Router_general.py & sleep 1" >> start.sh
+echo "python worker_router_general.py & sleep 1" >> start.sh 
+echo "python checking_service.py & sleep 1" >> start.sh
+echo "python dynamic_provisioning.py & sleep 1" >> start.sh
+echo "python Job_Queue.py & sleep 1" >> start.sh
+echo "python Resource_manager.py & sleep 1" >> start.sh
+echo "python Router2.py & sleep 1" >> start.sh
+echo "python worker_router2.py & sleep 1" >> start.sh
+echo "python Provisioning_Server.py & sleep 1" >> start.sh 
+echo "python provisioning_server_rest_client.py & sleep 1" >> start.sh
+echo "python provisioning_rest_server.py" >> start.sh
+
 
 
