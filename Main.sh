@@ -10,5 +10,11 @@ sleep 120
 mkdir /etc/chef-server/
 docker cp chef-server:/etc/chef-server/chef-validator.pem /etc/chef-server/
 docker tag wipro/ocd-chefclient:0.1.0 pandrew/chef-client
-
+cd /home/ubuntu
+mkdir ocd1/
+wget https://s3-ap-northeast-1.amazonaws.com/ocd-framework/ocd.tar.gz
+tar zxvf ocd.tar.gz -C ocd1/
+cd ocd1/ocd/
+java -jar dockerprov-1.0-SNAPSHOT-jar-with-dependencies.jar  &
+cd ../../
 docker run -d -i -t -p 0.0.0.0:3000:3000 -p 0.0.0.0:8050:8050 -p 0.0.0.0:7050:7050 wipro/ocd-meteor:0.1.0 bash start.sh
