@@ -14,7 +14,7 @@ cp /tmp/testfile /var/lib/gems/1.9.1/gems/chef-11.8.0/lib/chef/cookbook_uploader
 #echo testchef.wipro.com > /etc/hostname
 #hostname -F /etc/hostname
 knife cookbook upload --all -VV &
-#sleep 60
-#cd /ocd
-#ruby queue.rb &
-#ruby add_to_runlist.rb -o 0.0.0.0 &
+sleep 60
+cd /ocd
+ruby queue.rb &
+ruby add_to_runlist.rb -o 0.0.0.0 
